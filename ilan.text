@@ -1,0 +1,375 @@
+koneksi.php
+
+<?php
+
+class gudang {
+    private $hostname = "localhost";
+    private $username = "root";
+    private $password = "";
+    private $database_name = "db_warehouse_msib";
+    private $db;
+
+    public function __construct() {
+        $this->db = mysqli_connect($this->hostname, $this->username, $this->password, $this->database_name);
+
+    }
+
+    function tampil_data() {
+        $query = mysqli_query($this->db, "SELECT * FROM tb_gudang");
+        while($row = mysqli_fetch_array($query)){
+            $data[]=$row;
+        }
+
+        return isset($data) ? $data : [];
+    }
+
+    function simpan_data($nama, $lokasi, $kapasitas, $status, $opening_hour, $closing_hour) {
+       $query = mysqli_query($this->db, "INSERT INTO tb_gudang values('', '$nama', '$lokasi', '$kapasitas', '$status', '$opening_hour', '$closing_hour')");
+    }
+
+
+    function tampil_edit($id) {
+        $query = mysqli_query($this->db, "SELECT * FROM tb_gudang WHERE id='$id'");
+        while($row = mysqli_fetch_array($query)) {
+            $data[] = $row;
+        }
+
+        return isset($data) ? $data : [];
+
+    }
+
+
+    function edit_data($id, $nama, $lokasi, $kapasitas, $status, $opening_hour, $closing_hour) {
+        mysqli_query($this->db, "UPDATE tb_gudang SET nama='$nama', lokasi='$lokasi', kapasitas='$kapasitas', status='$status', opening_hour='$opening_hour', closing_hour='$closing_hour' WHERE id='$id'");
+    }
+
+
+    function hapus_data($id) {
+        mysqli_query($this->db, "DELETE  FROM tb_gudang  WHERE id='$id'");
+    }
+
+}
+?>
+
+
+
+
+header.php
+
+
+<?php
+
+include_once "koneksi.php";
+
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, intial-scale=1.0">
+    <title>Gudang</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+
+    <style>
+    body{
+    margin: 0;
+    padding: 0;
+    font-family: 'montserrat', sans-serif;
+    }
+
+    header{
+        background-color: rgb(106, 109, 94);
+        text-align: center;
+        padding: 20px;
+        color: white;
+    }
+
+    .content{
+        padding: 20px;
+    }
+
+    table{
+        width: 100%;
+        background-color: rgba(0,0,0,.03);
+        border-top: 1px solid rgba(0,0,0,.125);
+        border-left: 1px solid rgba(0,0,0,.125);
+    }
+
+    th, td{
+        border-right: 1px solid rgba(0,0,0,.125);
+        border-bottom: 1px solid rgba(0,0,0,.125);
+        padding: 10px;
+    }
+
+    .btn {
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+        color: white;
+        padding: 10px;
+        display: inline-block;
+        margin-bottom: 10px;
+        text-decoration: none;
+    }
+
+    .btn-cokelat {
+        background-color: chocolate;
+    }
+
+    .btn-blue {
+        background-color: blue;
+    }
+
+    .btn-red {
+        background-color: red;
+    }
+
+
+    .field {
+        margin: 10px;
+    }
+
+    .field .label {
+        display: block;
+    }
+
+    .field input {
+        padding: 10px;
+        display: block;
+    }
+
+    .field select {
+        padding: 10px;
+        font-size: 16px;
+    }
+
+
+    </style>
+</head>
+<body>
+    <header>Gudang Warehouse</header>
+    <div class="content">
+
+
+
+index.php
+
+<?php 
+include_once "header.php"; 
+
+?>
+        <a href="insert.php" class="btn btn-cokelat">Tambah Data</a>
+        <table>
+            <thead>
+                <tr>
+                    <th>NO</th>
+                    <th>Nama Gudang</th>
+                    <th>Lokasi Gudang</th>
+                    <th>Kapasitas Gudang</th>
+                    <th>Status Gudang</th>
+                    <th>Jam Buka</th>
+                    <th>Jam Tutup</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php 
+                include_once "koneksi.php"; 
+                $no = 1; 
+                $dt = new gudang(); 
+                foreach($dt->tampil_data() as $d) { 
+            ?> 
+                <tr>
+                    <td><?php echo $no++; ?></td>
+                    <td><?php echo $d["nama"];?></td>
+                    <td><?php echo $d["lokasi"];?></td>
+                    <td><?php echo $d["kapasitas"];?></td>
+                    <td><?php echo $d["status"];?></td>
+                    <td><?php echo $d["opening_hour"];?></td>
+                    <td><?php echo $d["closing_hour"];?></td>
+                    <td>
+                        <a href="edit.php?id=<?php echo $d['id'];?>" class="btn btn-blue">Edit</a>
+                        <a href="hapus.php?id=<?php echo $d['id']; ?>" onclick="return confirm('Apakah Anda yakin ingin menghapus data ini?')" class="btn btn-red">Delete</a>
+                    </td>
+                </tr>
+                <?php } ?>
+            </tbody>
+        </table>
+<?php 
+    include ("footer.php");
+?>
+
+
+
+
+insert.php
+
+<?php 
+include_once ("header.php");
+
+?>
+
+
+<form method="POST" action="aksi_insert.php" class="form">
+    <div class="field">
+        <span>Nama</span>
+        <input type="text"  name="nama">
+    </div>
+    <div class="field">
+        <span class="label">Lokasi Gudang</span>
+        <input type="text" name="lokasi">
+    </div>
+    <div class="field"> 
+        <span class="label">Kapasitas Gudang</span>
+        <input type="text" name="kapasitas">
+    </div>
+    <div class="field">
+        <span class="label">Status Gudang</span>
+        <select type="text" name="status">
+            <option>Aktif</option>
+            <option>Tidak Aktif</option>
+        </select>
+    </div>
+    <div class="field"> 
+        <span class="label">Jam Buka</span>
+        <input  type="time" name="opening_hour">
+    </div>
+    <div class="field"> 
+        <span class="label">Jam Tutup</span>
+        <input type="time" name="closing_hour">
+    </div>
+    <button>Simpan</button>
+    <a href="index.php"><button type="button">Kembali</button></a>
+</form>
+
+<?php include("footer.php") ?>
+
+
+
+
+aksi_insert.php
+
+<?php 
+include_once ("koneksi.php");
+
+
+//proses insert data
+$nama = $_POST['nama'];
+$lokasi = $_POST['lokasi'];
+$kapasitas = $_POST['kapasitas'];
+$status = $_POST['status'];
+$opening_hour = $_POST['opening_hour'];
+$closing_hour = $_POST['closing_hour'];
+
+$dt = new gudang();
+
+$dt->simpan_data($nama, $lokasi, $kapasitas, $status, $opening_hour, $closing_hour);
+
+header("location:index.php");
+
+?>
+
+
+
+
+edit.php
+
+
+<?php  
+include_once ("header.php");
+
+include_once ("koneksi.php");
+
+//select data
+$id = $_GET['id'];
+$dt = new gudang();
+foreach($dt->tampil_edit($id) as $d);
+
+
+//proses edit data
+if (isset($_POST['edit'])) {
+$id = $_POST['id'];
+$nama = $_POST['nama'];
+$lokasi = $_POST['lokasi'];
+$kapasitas = $_POST['kapasitas'];
+$status = $_POST['status'];
+$opening_hour = $_POST['opening_hour'];
+$closing_hour = $_POST['closing_hour'];
+
+$dt = new gudang();
+
+$dt->edit_data($id, $nama, $lokasi, $kapasitas, $status, $opening_hour, $closing_hour);
+
+header("location:index.php");
+}
+?>
+
+
+<form method="POST" action="" class="form">
+
+    <input type="hidden" name="id" value="<?php echo $d['id']; ?>">
+    <div class="field">
+        <span>Nama</span>
+        <input type="text" name="nama" value="<?php echo $d['nama'] ?>">
+    </div>
+    <div class="field">
+        <span>Lokasi Gudang</span>
+        <input type="text" name="lokasi" value="<?php echo $d['lokasi'] ?>">
+    </div>
+    <div class="field"> 
+        <span class="label">Kapasitas Gudang</span>
+        <input type="text" name="kapasitas" value="<?php echo $d['kapasitas'] ?>">
+    </div>
+    <div class="field">
+        <span class="label">Status Gudang</span>
+        <select type="text" name="status" value="<?php echo $d['status'] ?>">
+            <option value="Aktif" <?php echo ($d['status'] == 'Aktif') ? 'selected' : ''; ?>>Aktif</option>
+            <option value="Tidak Aktif" <?php echo ($d['status'] == 'Tidak Aktif') ? 'selected' : ''; ?>>Tidak Aktif</option>
+        </select>
+    </div>
+    <div class="field"> 
+        <span class="label">Jam Buka</span>
+        <input type="time" name="opening_hour" value="<?php echo $d['opening_hour'] ?>">
+    </div>
+    <div class="field"> 
+        <span class="label">Jam Tutup</span>
+        <input type="time" name="closing_hour" value="<?php echo $d['closing_hour'] ?>">
+    </div>
+    
+    <button type="submit" name="edit">Edit</button>
+    <a href="index.php"><button type="button">Kembali</button></a>
+</form>
+
+<?php include("footer.php") ?>
+
+
+
+hapus.php
+
+<?php 
+include_once ("koneksi.php");
+
+//PROSES DELETE DATA
+if (isset($_GET['id'])) {
+$id = $_GET['id'];
+
+$dt = new gudang();
+
+$dt->hapus_data($id);
+
+header("location:index.php");
+}
+
+?>
+
+
+
+footer.php
+
+</div>    
+</body>
+</html>
